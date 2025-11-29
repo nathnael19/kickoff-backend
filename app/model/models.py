@@ -22,8 +22,11 @@ class Tournament(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    # ORM-style relationship
+    # One tournament → many teams
     teams: List["Team"] = Relationship(back_populates="tournament")
+
+    # One tournament → many matches
+    matches: List["Match"] = Relationship(back_populates="tournament")
 
 
 class Team(SQLModel, table=True):
@@ -37,9 +40,17 @@ class Team(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    # ORM-style relationship
+    # Many teams → one tournament
     tournament: Optional[Tournament] = Relationship(back_populates="teams")
+
+    # One team → many players
     players: List["Player"] = Relationship(back_populates="team")
+
+    # One team → many home matches
+    home_matches: List["Match"] = Relationship(back_populates="home_team")
+
+    # One team → many away matches
+    away_matches: List["Match"] = Relationship(back_populates="away_team")
 
 
 class PlayerPosition(str, Enum):
@@ -65,5 +76,36 @@ class Player(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    # ORM-style relationship
-    team: Optional["Player"] = Relationship(back_populates="players")
+    # Many players → one team
+    team: Optional["Team"] = Relationship(back_populates="players")
+
+
+class Match(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    tournament_id: uuid.UUID = Field(foreign_key="tournament.id")
+    home_team_id: uuid.UUID = Field(foreign_key="team.id")
+    away_team_id: uuid.UUID = Field(foreign_key="team.id")
+
+    home_score: int = Field(default=0)
+    away_score: int = Field(default=0)
+    match_date: datetime
+    status: TournamentStatus = Field(default=TournamentStatus.planned)
+    location: str = Field(max_length=100)
+    referee: str = Field(max_length=100)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    # Many matches → one tournament
+    tournament: Optional["Tournament"] = Relationship(back_populates="matches")
+
+    # Match → home team
+    home_team: Optional["Team"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[Match.home_team_id]"},
+        back_populates="home_matches",
+    )
+
+    # Match → away team
+    away_team: Optional["Team"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[Match.away_team_id]"},
+        back_populates="away_matches",
+    )
