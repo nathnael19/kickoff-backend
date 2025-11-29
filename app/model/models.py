@@ -122,6 +122,9 @@ class Match(SQLModel, table=True):
     #
     matchevent: List["MatchEvent"] = Relationship(back_populates="match")
 
+    #
+    lineups: List["MatchLineup"] = Relationship(back_populates="match")
+
 
 class Goal(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -169,3 +172,15 @@ class MatchEvent(SQLModel, table=True):
     #
     match: Optional["Match"] = Relationship(back_populates="matchevent")
     player: Optional["Player"] = Relationship(back_populates="matchevent")
+
+
+class MatchLineup(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    match_id: uuid.UUID = Field(foreign_key="match.id")
+    team_id: uuid.UUID = Field(foreign_key="team.id")
+    player_id: uuid.UUID = Field(foreign_key="player.id")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    match: Optional["Match"] = Relationship(back_populates="lineups")
+    team: Optional["Team"] = Relationship()
+    player: Optional["Player"] = Relationship()
