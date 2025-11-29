@@ -52,6 +52,9 @@ class Team(SQLModel, table=True):
     # One team → many away matches
     away_matches: List["Match"] = Relationship(back_populates="away_team")
 
+    #
+    goals: List["Goal"] = Relationship(back_populates="team")
+
 
 class PlayerPosition(str, Enum):
     gk = "GK"
@@ -78,6 +81,9 @@ class Player(SQLModel, table=True):
 
     # Many players → one team
     team: Optional["Team"] = Relationship(back_populates="players")
+
+    #
+    matchevent: List["MatchEvent"] = Relationship(back_populates="player")
 
 
 class Match(SQLModel, table=True):
@@ -109,3 +115,57 @@ class Match(SQLModel, table=True):
         sa_relationship_kwargs={"foreign_keys": "[Match.away_team_id]"},
         back_populates="away_matches",
     )
+
+    # Match -> Goal
+    goals: List["Goal"] = Relationship(back_populates="match")
+
+    #
+    matchevent: List["MatchEvent"] = Relationship(back_populates="match")
+
+
+class Goal(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    match_id: uuid.UUID = Field(foreign_key="match.id")
+    team_id: uuid.UUID = Field(foreign_key="team.id")
+    scorer_player_id: uuid.UUID = Field(foreign_key="player.id")
+    assist_player_id: uuid.UUID = Field(foreign_key="player.id")
+    minutes: int = Field(ge=0, le=120)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    # Goal → Match
+    match: Optional["Match"] = Relationship(back_populates="goals")
+
+    # Goal → Team
+    team: Optional["Team"] = Relationship(back_populates="goals")
+
+    # Goal → Scorer Player
+    scorer: Optional["Player"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[Goal.scorer_player_id]"}
+    )
+
+    # Goal → Assist Player
+    assist: Optional["Player"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[Goal.assist_player_id]"}
+    )
+
+
+class MatchEventType(str, Enum):
+    yellow_card = "Yellow Card"
+    red_card = "Red Card"
+    goal = "Goal"
+    penality = "Penality"
+
+
+class MatchEvent(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    match_id: uuid.UUID = Field(foreign_key="match.id")
+    player_id: uuid.UUID = Field(foreign_key="player.id")
+    event_type: MatchEventType
+    minute: int = Field(ge=0, le=120)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    #
+    match: Optional["Match"] = Relationship(back_populates="matchevent")
+    player: Optional["Player"] = Relationship(back_populates="matchevent")
