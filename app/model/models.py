@@ -27,6 +27,8 @@ class Tournament(SQLModel, table=True):
 
     # One tournament → many matches
     matches: List["Match"] = Relationship(back_populates="tournament")
+    #
+    standings: List["Standing"] = Relationship(back_populates="tournament")
 
 
 class Team(SQLModel, table=True):
@@ -56,6 +58,8 @@ class Team(SQLModel, table=True):
     goals: List["Goal"] = Relationship(back_populates="team")
     #
     card: List["Card"] = Relationship(back_populates="team")
+    #
+    standings: List["Standing"] = Relationship(back_populates="team")
 
 
 class PlayerPosition(str, Enum):
@@ -163,7 +167,7 @@ class MatchEventType(str, Enum):
     yellow_card = "Yellow Card"
     red_card = "Red Card"
     goal = "Goal"
-    penality = "Penality"
+    penalty = "Penalty"
 
 
 class MatchEvent(SQLModel, table=True):
@@ -210,3 +214,19 @@ class Card(SQLModel, table=True):
     match: Optional["Match"] = Relationship(back_populates="card")
     player: Optional["Player"] = Relationship(back_populates="card")
     team: Optional["Team"] = Relationship(back_populates="card")
+
+
+class Standing(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    tournament_id: uuid.UUID = Field(foreign_key="tournament.id")
+    team_id: uuid.UUID = Field(foreign_key="team.id")
+    match_played: int = Field(default=0, ge=0)
+    wins: int = Field(default=0, ge=0)
+    draws: int = Field(default=0, ge=0)
+    loss: int = Field(default=0, ge=0)
+    points: int = Field(default=0, ge=0)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    #
+    team: Optional["Team"] = Relationship(back_populates="standings")
+    tournament: Optional["Tournament"] = Relationship(back_populates="standings")
