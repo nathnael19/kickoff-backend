@@ -54,6 +54,8 @@ class Team(SQLModel, table=True):
 
     #
     goals: List["Goal"] = Relationship(back_populates="team")
+    #
+    card: List["Card"] = Relationship(back_populates="team")
 
 
 class PlayerPosition(str, Enum):
@@ -84,6 +86,8 @@ class Player(SQLModel, table=True):
 
     #
     matchevent: List["MatchEvent"] = Relationship(back_populates="player")
+    #
+    card: List["Card"] = Relationship(back_populates="player")
 
 
 class Match(SQLModel, table=True):
@@ -124,6 +128,8 @@ class Match(SQLModel, table=True):
 
     #
     lineups: List["MatchLineup"] = Relationship(back_populates="match")
+    #
+    card: List["Card"] = Relationship(back_populates="match")
 
 
 class Goal(SQLModel, table=True):
@@ -184,3 +190,23 @@ class MatchLineup(SQLModel, table=True):
     match: Optional["Match"] = Relationship(back_populates="lineups")
     team: Optional["Team"] = Relationship()
     player: Optional["Player"] = Relationship()
+
+
+class CardType(str, Enum):
+    yellow = "Yellow"
+    red = "Red"
+
+
+class Card(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    match_id: uuid.UUID = Field(foreign_key="match.id")
+    player_id: uuid.UUID = Field(foreign_key="player.id")
+    team_id: uuid.UUID = Field(foreign_key="team.id")
+    card_type: CardType
+    minute: int = Field(ge=0, le=120)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    #
+    match: Optional["Match"] = Relationship(back_populates="card")
+    player: Optional["Player"] = Relationship(back_populates="card")
+    team: Optional["Team"] = Relationship(back_populates="card")
