@@ -90,3 +90,5 @@ htmlcov/
 # -----------------------------
 docker-compose.override.yml
 *.dockerfile
+
+alembic/

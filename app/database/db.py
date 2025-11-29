@@ -1,9 +1,31 @@
-from sqlmodel import create_engine, SQLModel
+from sqlmodel import SQLModel, create_engine, Session
 from app.core.config import settings
 
+# Engine
+engine = create_engine(settings.postgres_url, echo=True)  # NullPool optional for dev
 
-engine = create_engine(settings.postgres_url, echo=True)
 
+# Create tables
+def create_db_and_tables():
+    from app.model.models import (
+        Card,
+        Goal,
+        Match,
+        MatchEvent,
+        MatchLineup,
+        Standing,
+        Player,
+        Team,
+        Tournament,
+    )
 
-def create_tables():
     SQLModel.metadata.create_all(engine)
+
+
+# Correct get_session for FastAPI
+def get_session():
+    session = Session(engine)
+    try:
+        yield session
+    finally:
+        session.close()  # ALWAYS close session in finally, no bare except

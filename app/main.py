@@ -1,7 +1,13 @@
 from fastapi import FastAPI
-
+from .database.db import create_db_and_tables
+from app.routers import tournaments
 
 app = FastAPI(title="Kick OFF")
+
+
+@app.on_event("startup")
+def on_startup():
+    create_db_and_tables()
 
 
 @app.get("/")

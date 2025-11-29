@@ -4,62 +4,13 @@ import uuid
 from datetime import datetime
 from enum import Enum
 
+# ---------------- Enums ---------------- #
+
 
 class TournamentStatus(str, Enum):
     planned = "planned"
     ongoing = "ongoing"
     finished = "finished"
-
-
-class Tournament(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    name: str = Field(..., max_length=100)
-    description: Optional[str] = Field(default=None, max_length=500)
-    status: TournamentStatus = Field(default=TournamentStatus.planned)
-    logo_url: Optional[str] = None
-    start_date: datetime
-    end_date: Optional[datetime] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-
-    # One tournament → many teams
-    teams: List["Team"] = Relationship(back_populates="tournament")
-
-    # One tournament → many matches
-    matches: List["Match"] = Relationship(back_populates="tournament")
-    #
-    standings: List["Standing"] = Relationship(back_populates="tournament")
-
-
-class Team(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    tournament_id: uuid.UUID = Field(foreign_key="tournament.id")
-    name: str = Field(..., max_length=100)
-    description: Optional[str] = Field(default=None, max_length=500)
-    department: str = Field(..., max_length=100)
-    coach: str = Field(..., max_length=100)
-    logo_url: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-
-    # Many teams → one tournament
-    tournament: Optional[Tournament] = Relationship(back_populates="teams")
-
-    # One team → many players
-    players: List["Player"] = Relationship(back_populates="team")
-
-    # One team → many home matches
-    home_matches: List["Match"] = Relationship(back_populates="home_team")
-
-    # One team → many away matches
-    away_matches: List["Match"] = Relationship(back_populates="away_team")
-
-    #
-    goals: List["Goal"] = Relationship(back_populates="team")
-    #
-    card: List["Card"] = Relationship(back_populates="team")
-    #
-    standings: List["Standing"] = Relationship(back_populates="team")
 
 
 class PlayerPosition(str, Enum):
@@ -75,6 +26,65 @@ class PlayerPosition(str, Enum):
     cf = "CF"
 
 
+class MatchEventType(str, Enum):
+    yellow_card = "Yellow Card"
+    red_card = "Red Card"
+    goal = "Goal"
+    penalty = "Penalty"
+
+
+class CardType(str, Enum):
+    yellow = "Yellow"
+    red = "Red"
+
+
+# ---------------- Models ---------------- #
+
+
+class Tournament(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    name: str = Field(..., max_length=100)
+    description: Optional[str] = Field(default=None, max_length=500)
+    status: TournamentStatus = Field(default=TournamentStatus.planned)
+    logo_url: Optional[str] = None
+    start_date: datetime
+    end_date: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    teams: List["Team"] = Relationship(back_populates="tournament")
+    matches: List["Match"] = Relationship(back_populates="tournament")
+    standings: List["Standing"] = Relationship(back_populates="tournament")
+
+
+class Team(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    tournament_id: uuid.UUID = Field(foreign_key="tournament.id")
+    name: str = Field(..., max_length=100)
+    description: Optional[str] = Field(default=None, max_length=500)
+    department: str = Field(..., max_length=100)
+    coach: str = Field(..., max_length=100)
+    logo_url: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    tournament: Optional[Tournament] = Relationship(back_populates="teams")
+    players: List["Player"] = Relationship(back_populates="team")
+
+    home_matches: List["Match"] = Relationship(
+        back_populates="home_team",
+        sa_relationship_kwargs={"foreign_keys": "[Match.home_team_id]"},
+    )
+    away_matches: List["Match"] = Relationship(
+        back_populates="away_team",
+        sa_relationship_kwargs={"foreign_keys": "[Match.away_team_id]"},
+    )
+
+    goals: List["Goal"] = Relationship(back_populates="team")
+    card: List["Card"] = Relationship(back_populates="team")
+    standings: List["Standing"] = Relationship(back_populates="team")
+
+
 class Player(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     team_id: uuid.UUID = Field(foreign_key="team.id")
@@ -85,12 +95,8 @@ class Player(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    # Many players → one team
-    team: Optional["Team"] = Relationship(back_populates="players")
-
-    #
+    team: Optional[Team] = Relationship(back_populates="players")
     matchevent: List["MatchEvent"] = Relationship(back_populates="player")
-    #
     card: List["Card"] = Relationship(back_populates="player")
 
 
@@ -109,30 +115,20 @@ class Match(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    # Many matches → one tournament
-    tournament: Optional["Tournament"] = Relationship(back_populates="matches")
+    tournament: Optional[Tournament] = Relationship(back_populates="matches")
 
-    # Match → home team
-    home_team: Optional["Team"] = Relationship(
-        sa_relationship_kwargs={"foreign_keys": "[Match.home_team_id]"},
+    home_team: Optional[Team] = Relationship(
         back_populates="home_matches",
+        sa_relationship_kwargs={"foreign_keys": "[Match.home_team_id]"},
     )
-
-    # Match → away team
-    away_team: Optional["Team"] = Relationship(
-        sa_relationship_kwargs={"foreign_keys": "[Match.away_team_id]"},
+    away_team: Optional[Team] = Relationship(
         back_populates="away_matches",
+        sa_relationship_kwargs={"foreign_keys": "[Match.away_team_id]"},
     )
 
-    # Match -> Goal
     goals: List["Goal"] = Relationship(back_populates="match")
-
-    #
     matchevent: List["MatchEvent"] = Relationship(back_populates="match")
-
-    #
     lineups: List["MatchLineup"] = Relationship(back_populates="match")
-    #
     card: List["Card"] = Relationship(back_populates="match")
 
 
@@ -146,28 +142,15 @@ class Goal(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    # Goal → Match
-    match: Optional["Match"] = Relationship(back_populates="goals")
+    match: Optional[Match] = Relationship(back_populates="goals")
+    team: Optional[Team] = Relationship(back_populates="goals")
 
-    # Goal → Team
-    team: Optional["Team"] = Relationship(back_populates="goals")
-
-    # Goal → Scorer Player
-    scorer: Optional["Player"] = Relationship(
+    scorer: Optional[Player] = Relationship(
         sa_relationship_kwargs={"foreign_keys": "[Goal.scorer_player_id]"}
     )
-
-    # Goal → Assist Player
-    assist: Optional["Player"] = Relationship(
+    assist: Optional[Player] = Relationship(
         sa_relationship_kwargs={"foreign_keys": "[Goal.assist_player_id]"}
     )
-
-
-class MatchEventType(str, Enum):
-    yellow_card = "Yellow Card"
-    red_card = "Red Card"
-    goal = "Goal"
-    penalty = "Penalty"
 
 
 class MatchEvent(SQLModel, table=True):
@@ -179,9 +162,8 @@ class MatchEvent(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    #
-    match: Optional["Match"] = Relationship(back_populates="matchevent")
-    player: Optional["Player"] = Relationship(back_populates="matchevent")
+    match: Optional[Match] = Relationship(back_populates="matchevent")
+    player: Optional[Player] = Relationship(back_populates="matchevent")
 
 
 class MatchLineup(SQLModel, table=True):
@@ -191,14 +173,13 @@ class MatchLineup(SQLModel, table=True):
     player_id: uuid.UUID = Field(foreign_key="player.id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-    match: Optional["Match"] = Relationship(back_populates="lineups")
-    team: Optional["Team"] = Relationship()
-    player: Optional["Player"] = Relationship()
-
-
-class CardType(str, Enum):
-    yellow = "Yellow"
-    red = "Red"
+    match: Optional[Match] = Relationship(back_populates="lineups")
+    team: Optional[Team] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[MatchLineup.team_id]"}
+    )
+    player: Optional[Player] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[MatchLineup.player_id]"}
+    )
 
 
 class Card(SQLModel, table=True):
@@ -210,10 +191,9 @@ class Card(SQLModel, table=True):
     minute: int = Field(ge=0, le=120)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-    #
-    match: Optional["Match"] = Relationship(back_populates="card")
-    player: Optional["Player"] = Relationship(back_populates="card")
-    team: Optional["Team"] = Relationship(back_populates="card")
+    match: Optional[Match] = Relationship(back_populates="card")
+    player: Optional[Player] = Relationship(back_populates="card")
+    team: Optional[Team] = Relationship(back_populates="card")
 
 
 class Standing(SQLModel, table=True):
@@ -227,6 +207,5 @@ class Standing(SQLModel, table=True):
     points: int = Field(default=0, ge=0)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    #
-    team: Optional["Team"] = Relationship(back_populates="standings")
-    tournament: Optional["Tournament"] = Relationship(back_populates="standings")
+    team: Optional[Team] = Relationship(back_populates="standings")
+    tournament: Optional[Tournament] = Relationship(back_populates="standings")
