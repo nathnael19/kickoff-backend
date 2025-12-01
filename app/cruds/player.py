@@ -3,6 +3,8 @@ from app.model.models import Player
 from sqlmodel import Session, select
 import uuid
 
+from app.utils.helpers import add_to_db
+
 
 def get_player(db: Session, player_id: uuid.UUID):
     return db.get(Player, player_id)
@@ -14,10 +16,7 @@ def get_players(db: Session, skip: int = 0, limit: int = 0) -> List[Player]:
 
 
 def create_player(db: Session, player: Player) -> Player:
-    db.add(player)
-    db.commit()
-    db.refresh(player)
-    return player
+    return add_to_db(db, player)
 
 
 def update_player(
@@ -28,11 +27,7 @@ def update_player(
         return None
     for key, value in player_data.items():
         setattr(player, key, value)
-    db.add(player)
-    db.commit()
-    db.refresh(player)
-
-    return player
+    return add_to_db(db, player)
 
 
 def delete_player(db: Session, player_id: uuid.UUID) -> bool:

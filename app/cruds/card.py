@@ -1,6 +1,7 @@
 from typing import List, Optional
 from app.model.models import Card
 from sqlmodel import Session, select
+from app.utils.helpers import add_to_db
 import uuid
 
 
@@ -13,11 +14,8 @@ def get_cards(db: Session, skip: int = 0, limit: int = 0) -> List[Card]:
     return list(db.exec(statement).all())
 
 
-def create_card(db: Session, card: Card) -> Card:
-    db.add(card)
-    db.commit()
-    db.refresh(card)
-    return card
+def create_card(db: Session, card: Card):
+    return add_to_db(db, card)
 
 
 def update_card(db: Session, card_data: dict, card_id: uuid.UUID) -> Optional[Card]:
@@ -26,11 +24,7 @@ def update_card(db: Session, card_data: dict, card_id: uuid.UUID) -> Optional[Ca
         return None
     for key, value in card_data.items():
         setattr(card, key, value)
-    db.add(card)
-    db.commit()
-    db.refresh(card)
-
-    return card
+    return add_to_db(db, card)
 
 
 def delete_card(db: Session, card_id: uuid.UUID) -> bool:

@@ -3,6 +3,8 @@ from app.model.models import MatchLineup
 from sqlmodel import Session, select
 import uuid
 
+from app.utils.helpers import add_to_db
+
 
 def get_match_lineup(db: Session, match_lineup_id: uuid.UUID):
     return db.get(MatchLineup, match_lineup_id)
@@ -14,10 +16,7 @@ def get_match_lineups(db: Session, skip: int = 0, limit: int = 0) -> List[MatchL
 
 
 def create_match_lineup(db: Session, match_lineup: MatchLineup) -> MatchLineup:
-    db.add(match_lineup)
-    db.commit()
-    db.refresh(match_lineup)
-    return match_lineup
+    return add_to_db(db, match_lineup)
 
 
 def update_match_lineup(
@@ -28,11 +27,7 @@ def update_match_lineup(
         return None
     for key, value in match_lineup_data.items():
         setattr(match_lineup, key, value)
-    db.add(match_lineup)
-    db.commit()
-    db.refresh(match_lineup)
-
-    return match_lineup
+    return add_to_db(db, match_lineup)
 
 
 def delete_match_lineup(db: Session, match_lineup_id: uuid.UUID) -> bool:

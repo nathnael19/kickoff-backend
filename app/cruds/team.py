@@ -3,6 +3,8 @@ from sqlmodel import Session, select
 from app.model.models import Team
 import uuid
 
+from app.utils.helpers import add_to_db
+
 
 def get_team(db: Session, team_id: uuid.UUID) -> Optional[Team]:
     return db.get(Team, team_id)
@@ -14,10 +16,7 @@ def get_teams(db: Session, skip: int = 0, limit: int = 0) -> List[Team]:
 
 
 def create_team(db: Session, team: Team) -> Team:
-    db.add(team)
-    db.commit()
-    db.refresh(team)
-    return team
+    return add_to_db(db, team)
 
 
 def update_team(db: Session, team_id: uuid.UUID, team_data: dict) -> Optional[Team]:
@@ -26,10 +25,7 @@ def update_team(db: Session, team_id: uuid.UUID, team_data: dict) -> Optional[Te
         return None
     for key, value in team_data.items():
         setattr(team, key, value)
-    db.add(team)
-    db.commit()
-    db.refresh(team)
-    return team
+    return add_to_db(db, team)
 
 
 def delete_team(db: Session, team_id: uuid.UUID) -> bool:
