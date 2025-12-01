@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 import uuid
 
 
-def get_Player(db: Session, goal_id: uuid.UUID):
+def get_goal(db: Session, goal_id: uuid.UUID):
     return db.get(Goal, goal_id)
 
 
