@@ -1,6 +1,14 @@
 from fastapi import FastAPI
 from .database.db import create_db_and_tables
-from app.routers import tournaments, team, standing, player, match, match_lineup
+from app.routers import (
+    tournaments,
+    team,
+    standing,
+    player,
+    match,
+    match_lineup,
+    match_event,
+)
 
 app = FastAPI(title="Kick OFF")
 
@@ -10,6 +18,7 @@ app.include_router(standing.router)
 app.include_router(player.router)
 app.include_router(match.router)
 app.include_router(match_lineup.router)
+app.include_router(match_event.router)
 
 
 @app.on_event("startup")
