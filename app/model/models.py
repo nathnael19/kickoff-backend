@@ -41,32 +41,49 @@ class CardType(str, Enum):
 # ---------------- Models ---------------- #
 
 
-class Tournament(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+# --- Tournament ---
+class TournamentBase(SQLModel):
     name: str = Field(..., max_length=100)
     description: Optional[str] = Field(default=None, max_length=500)
     status: TournamentStatus = Field(default=TournamentStatus.planned)
     logo_url: Optional[str] = None
     start_date: datetime
     end_date: Optional[datetime] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class TournamentCreate(TournamentBase):
+    pass
+
+
+class Tournament(TournamentBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     teams: List["Team"] = Relationship(back_populates="tournament")
     matches: List["Match"] = Relationship(back_populates="tournament")
     standings: List["Standing"] = Relationship(back_populates="tournament")
 
 
-class Team(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+# --- Team ---
+class TeamBase(SQLModel):
+    # Foreign keys must be in Base/Create so you can link them on creation
     tournament_id: uuid.UUID = Field(foreign_key="tournament.id", ondelete="CASCADE")
     name: str = Field(..., max_length=100)
     description: Optional[str] = Field(default=None, max_length=500)
     department: str = Field(..., max_length=100)
     coach: str = Field(..., max_length=100)
     logo_url: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class TeamCreate(TeamBase):
+    pass
+
+
+class Team(TeamBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     tournament: Optional[Tournament] = Relationship(back_populates="teams")
     players: List["Player"] = Relationship(back_populates="team")
@@ -79,44 +96,57 @@ class Team(SQLModel, table=True):
         back_populates="away_team",
         sa_relationship_kwargs={"foreign_keys": "[Match.away_team_id]"},
     )
-
     goals: List["Goal"] = Relationship(back_populates="team")
     card: List["Card"] = Relationship(back_populates="team")
     standings: List["Standing"] = Relationship(back_populates="team")
 
 
-class Player(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+# --- Player ---
+class PlayerBase(SQLModel):
     team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
     name: str = Field(max_length=100)
     position: PlayerPosition
     number: int = Field(ge=1, le=99)
     photo_url: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class PlayerCreate(PlayerBase):
+    pass
+
+
+class Player(PlayerBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     team: Optional[Team] = Relationship(back_populates="players")
     matchevent: List["MatchEvent"] = Relationship(back_populates="player")
     card: List["Card"] = Relationship(back_populates="player")
 
 
-class Match(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+# --- Match ---
+class MatchBase(SQLModel):
     tournament_id: uuid.UUID = Field(foreign_key="tournament.id", ondelete="CASCADE")
     home_team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
     away_team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
-
     home_score: int = Field(default=0)
     away_score: int = Field(default=0)
     match_date: datetime
     status: TournamentStatus = Field(default=TournamentStatus.planned)
     location: str = Field(max_length=100)
     referee: str = Field(max_length=100)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class MatchCreate(MatchBase):
+    pass
+
+
+class Match(MatchBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     tournament: Optional[Tournament] = Relationship(back_populates="matches")
-
     home_team: Optional[Team] = Relationship(
         back_populates="home_matches",
         sa_relationship_kwargs={"foreign_keys": "[Match.home_team_id]"},
@@ -125,26 +155,33 @@ class Match(SQLModel, table=True):
         back_populates="away_matches",
         sa_relationship_kwargs={"foreign_keys": "[Match.away_team_id]"},
     )
-
     goals: List["Goal"] = Relationship(back_populates="match")
     matchevent: List["MatchEvent"] = Relationship(back_populates="match")
     lineups: List["MatchLineup"] = Relationship(back_populates="match")
     card: List["Card"] = Relationship(back_populates="match")
 
 
-class Goal(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+# --- Goal ---
+class GoalBase(SQLModel):
     match_id: uuid.UUID = Field(foreign_key="match.id", ondelete="CASCADE")
     team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
     scorer_player_id: uuid.UUID = Field(foreign_key="player.id", ondelete="CASCADE")
+    # Note: If an assist is optional, you might want to make this Optional[uuid.UUID] = None
     assist_player_id: uuid.UUID = Field(foreign_key="player.id", ondelete="CASCADE")
     minutes: int = Field(ge=0, le=120)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class GoalCreate(GoalBase):
+    pass
+
+
+class Goal(GoalBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     match: Optional[Match] = Relationship(back_populates="goals")
     team: Optional[Team] = Relationship(back_populates="goals")
-
     scorer: Optional[Player] = Relationship(
         sa_relationship_kwargs={"foreign_keys": "[Goal.scorer_player_id]"}
     )
@@ -153,25 +190,41 @@ class Goal(SQLModel, table=True):
     )
 
 
-class MatchEvent(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+# --- MatchEvent ---
+class MatchEventBase(SQLModel):
     match_id: uuid.UUID = Field(foreign_key="match.id", ondelete="CASCADE")
     player_id: uuid.UUID = Field(foreign_key="player.id", ondelete="CASCADE")
     event_type: MatchEventType
     minute: int = Field(ge=0, le=120)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class MatchEventCreate(MatchEventBase):
+    pass
+
+
+class MatchEvent(MatchEventBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     match: Optional[Match] = Relationship(back_populates="matchevent")
     player: Optional[Player] = Relationship(back_populates="matchevent")
 
 
-class MatchLineup(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+# --- MatchLineup ---
+class MatchLineupBase(SQLModel):
     match_id: uuid.UUID = Field(foreign_key="match.id", ondelete="CASCADE")
     team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
     player_id: uuid.UUID = Field(foreign_key="player.id", ondelete="CASCADE")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class MatchLineupCreate(MatchLineupBase):
+    pass
+
+
+class MatchLineup(MatchLineupBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.now)
 
     match: Optional[Match] = Relationship(back_populates="lineups")
     team: Optional[Team] = Relationship(
@@ -182,22 +235,30 @@ class MatchLineup(SQLModel, table=True):
     )
 
 
-class Card(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+# --- Card ---
+class CardBase(SQLModel):
     match_id: uuid.UUID = Field(foreign_key="match.id", ondelete="CASCADE")
     player_id: uuid.UUID = Field(foreign_key="player.id", ondelete="CASCADE")
     team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
     card_type: CardType
     minute: int = Field(ge=0, le=120)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class CardCreate(CardBase):
+    pass
+
+
+class Card(CardBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.now)
 
     match: Optional[Match] = Relationship(back_populates="card")
     player: Optional[Player] = Relationship(back_populates="card")
     team: Optional[Team] = Relationship(back_populates="card")
 
 
-class Standing(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+# --- Standing ---
+class StandingBase(SQLModel):
     tournament_id: uuid.UUID = Field(foreign_key="tournament.id", ondelete="CASCADE")
     team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
     match_played: int = Field(default=0, ge=0)
@@ -205,7 +266,15 @@ class Standing(SQLModel, table=True):
     draws: int = Field(default=0, ge=0)
     loss: int = Field(default=0, ge=0)
     points: int = Field(default=0, ge=0)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class StandingCreate(StandingBase):
+    pass
+
+
+class Standing(StandingBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     team: Optional[Team] = Relationship(back_populates="standings")
     tournament: Optional[Tournament] = Relationship(back_populates="standings")

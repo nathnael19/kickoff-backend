@@ -1,5 +1,6 @@
+from datetime import datetime
 from typing import List, Optional
-from app.model.models import MatchLineup
+from app.model.models import MatchLineup, MatchLineupCreate
 from sqlmodel import Session, select
 import uuid
 
@@ -15,13 +16,15 @@ def get_match_lineups(db: Session, skip: int = 0, limit: int = 0) -> List[MatchL
     return list(db.exec(statement).all())
 
 
-def create_match_lineup(db: Session, match_lineup: MatchLineup) -> MatchLineup:
-    return add_to_db(db, match_lineup)
+def create_match_lineup(db: Session, match_lineup: MatchLineupCreate) -> MatchLineup:
+    db_match_lineup = MatchLineup.model_validate(match_lineup)
+    return add_to_db(db, db_match_lineup)
 
 
 def update_match_lineup(
     db: Session, match_lineup_data: dict, match_lineup_id: uuid.UUID
 ) -> Optional[MatchLineup]:
+    match_lineup_data["updated_at"] = datetime.now()
     return update_to_db(db, match_lineup_id, match_lineup_data, MatchLineup)
 
 

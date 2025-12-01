@@ -1,9 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
 from typing import List
 import uuid
-from app.model.models import Tournament
-from app.database.db import get_session
+from app.model.models import Tournament, TournamentCreate
 from app.utils.helpers import database_dependency
 from app.cruds.tournaments import (
     get_tournament,
@@ -17,9 +15,7 @@ router = APIRouter(prefix="/tournament", tags=["Tournaments"])
 
 
 @router.get("/", response_model=List[Tournament])
-def read_tournaments(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_session)
-):
+def read_tournaments(db: database_dependency, skip: int = 0, limit: int = 100):
     return get_tournaments(db=db, skip=skip, limit=limit)
 
 
@@ -32,8 +28,8 @@ def read_tournament(tournament_id: uuid.UUID, db: database_dependency):
 
 
 @router.post("/", response_model=Tournament)
-def add_tournament(tournamet: Tournament, db: database_dependency):
-    return create_tournament(db=db, tournament=tournamet)
+def add_tournament(tournament: TournamentCreate, db: database_dependency):
+    return create_tournament(db=db, tournament=tournament)
 
 
 @router.put("/{tournament_id}", response_model=Tournament)

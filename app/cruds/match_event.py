@@ -1,5 +1,6 @@
+from datetime import datetime
 from typing import List, Optional
-from app.model.models import MatchEvent
+from app.model.models import MatchEvent, MatchEventCreate
 from sqlmodel import Session, select
 import uuid
 
@@ -15,13 +16,15 @@ def get_match_events(db: Session, skip: int = 0, limit: int = 0) -> List[MatchEv
     return list(db.exec(statement).all())
 
 
-def create_match_event(db: Session, match_event: MatchEvent) -> MatchEvent:
-    return add_to_db(db, match_event)
+def create_match_event(db: Session, match_event: MatchEventCreate) -> MatchEvent:
+    db_match_event = MatchEvent.model_validate(match_event)
+    return add_to_db(db, db_match_event)
 
 
 def update_match_event(
     db: Session, match_event_data: dict, match_event_id: uuid.UUID
 ) -> Optional[MatchEvent]:
+    match_event_data["updated_at"] = datetime.now()
     return update_to_db(db, match_event_id, match_event_data, MatchEvent)
 
 

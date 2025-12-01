@@ -1,5 +1,6 @@
+from datetime import datetime
 from typing import List, Optional
-from app.model.models import Goal
+from app.model.models import Goal, GoalCreate
 from sqlmodel import Session, select
 import uuid
 
@@ -15,11 +16,13 @@ def get_goals(db: Session, skip: int = 0, limit: int = 0) -> List[Goal]:
     return list(db.exec(statement).all())
 
 
-def create_goal(db: Session, goal: Goal) -> Goal:
-    return add_to_db(db, goal)
+def create_goal(db: Session, goal: GoalCreate) -> Goal:
+    db_goal = Goal.model_validate(goal)
+    return add_to_db(db, db_goal)
 
 
 def update_goal(db: Session, goal_data: dict, goal_id: uuid.UUID) -> Optional[Goal]:
+    goal_data["updated_at"] = datetime.now()
     return update_to_db(db, goal_id, goal_data, Goal)
 
 

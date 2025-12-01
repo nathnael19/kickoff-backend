@@ -1,5 +1,6 @@
+from datetime import datetime
 from typing import List, Optional
-from app.model.models import Card
+from app.model.models import Card, CardCreate
 from sqlmodel import Session, select
 from app.utils.helpers import add_to_db, delete_from_db, update_to_db
 import uuid
@@ -14,11 +15,13 @@ def get_cards(db: Session, skip: int = 0, limit: int = 0) -> List[Card]:
     return list(db.exec(statement).all())
 
 
-def create_card(db: Session, card: Card):
-    return add_to_db(db, card)
+def create_card(db: Session, card: CardCreate):
+    db_card = Card.model_validate(card)
+    return add_to_db(db, db_card)
 
 
 def update_card(db: Session, card_data: dict, card_id: uuid.UUID) -> Optional[Card]:
+    card_data["updated_at"] = datetime.now()
     return update_to_db(db, card_id, card_data, Card)
 
 

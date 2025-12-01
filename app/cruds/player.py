@@ -1,5 +1,6 @@
+from datetime import datetime
 from typing import List, Optional
-from app.model.models import Player
+from app.model.models import Player, PlayerCreate
 from sqlmodel import Session, select
 import uuid
 
@@ -15,13 +16,15 @@ def get_players(db: Session, skip: int = 0, limit: int = 0) -> List[Player]:
     return list(db.exec(statement).all())
 
 
-def create_player(db: Session, player: Player) -> Player:
-    return add_to_db(db, player)
+def create_player(db: Session, player: PlayerCreate) -> Player:
+    db_player = Player.model_validate(player)
+    return add_to_db(db, db_player)
 
 
 def update_player(
     db: Session, player_data: dict, player_id: uuid.UUID
 ) -> Optional[Player]:
+    player_data["updated_at"] = datetime.now()
     return update_to_db(db, player_id, player_data, Player)
 
 

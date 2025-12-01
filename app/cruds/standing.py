@@ -1,5 +1,6 @@
+from datetime import datetime
 from typing import List, Optional
-from app.model.models import Standing
+from app.model.models import Standing, StandingCreate
 from sqlmodel import Session, select
 import uuid
 
@@ -15,13 +16,15 @@ def get_standings(db: Session, skip: int = 0, limit: int = 0) -> List[Standing]:
     return list(db.exec(statement).all())
 
 
-def create_standing(db: Session, standing: Standing) -> Standing:
-    return add_to_db(db, standing)
+def create_standing(db: Session, standing: StandingCreate) -> Standing:
+    db_standing = Standing.model_validate(standing)
+    return add_to_db(db, db_standing)
 
 
 def update_standing(
     db: Session, standing_data: dict, standing_id: uuid.UUID
 ) -> Optional[Standing]:
+    standing_data["updated_at"] = datetime.now()
     return update_to_db(db, standing_id, standing_data, Standing)
 
 

@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
-from typing import List, Optional
-from app.database.db import get_session
-from app.model.models import MatchLineup
+from typing import List
+from app.model.models import MatchLineup, MatchLineupCreate
 import uuid
+from app.utils.helpers import database_dependency
 from app.cruds.match_lineup import (
     create_match_lineup,
     get_match_lineup,
@@ -16,14 +15,12 @@ router = APIRouter(prefix="/match_lineups", tags=["Match Lineups"])
 
 
 @router.get("/", response_model=List[MatchLineup])
-def read_match_lineups(
-    db: Session = Depends(get_session), skip: int = 0, limit: int = 100
-):
+def read_match_lineups(db: database_dependency, skip: int = 0, limit: int = 100):
     return get_match_lineups(db=db, skip=skip, limit=limit)
 
 
 @router.get("/{match_lineup_id}", response_model=MatchLineup)
-def read_match_lineup(match_lineup_id: uuid.UUID, db: Session = Depends(get_session)):
+def read_match_lineup(match_lineup_id: uuid.UUID, db: database_dependency):
     match_lineup = get_match_lineup(db=db, match_lineup_id=match_lineup_id)
     if not match_lineup:
         raise HTTPException(detail="Not found!", status_code=status.HTTP_404_NOT_FOUND)
@@ -31,7 +28,7 @@ def read_match_lineup(match_lineup_id: uuid.UUID, db: Session = Depends(get_sess
 
 
 @router.post("/", response_model=MatchLineup)
-def add_match_lineup(match_lineup: MatchLineup, db: Session = Depends(get_session)):
+def add_match_lineup(match_lineup: MatchLineupCreate, db: database_dependency):
     return create_match_lineup(db=db, match_lineup=match_lineup)
 
 
@@ -39,7 +36,7 @@ def add_match_lineup(match_lineup: MatchLineup, db: Session = Depends(get_sessio
 def put_match_lineup(
     match_lineup_id: uuid.UUID,
     match_lineup_data: dict,
-    db: Session = Depends(get_session),
+    db: database_dependency,
 ):
     update = update_match_lineup(
         db=db, match_lineup_id=match_lineup_id, match_lineup_data=match_lineup_data
@@ -50,7 +47,7 @@ def put_match_lineup(
 
 
 @router.delete("/", response_model=dict)
-def remove_match_lineup(match_lineup_id: uuid.UUID, db: Session = Depends(get_session)):
+def remove_match_lineup(match_lineup_id: uuid.UUID, db: database_dependency):
     delete = delete_match_lineup(db=db, match_lineup_id=match_lineup_id)
     if not delete:
         raise HTTPException(detail="Not Found!!", status_code=status.HTTP_404_NOT_FOUND)

@@ -1,5 +1,6 @@
+from datetime import datetime
 from typing import List, Optional
-from app.model.models import Match
+from app.model.models import Match, MatchCreate
 from sqlmodel import Session, select
 import uuid
 
@@ -15,11 +16,13 @@ def get_matchs(db: Session, skip: int = 0, limit: int = 0) -> List[Match]:
     return list(db.exec(statement).all())
 
 
-def create_match(db: Session, match: Match) -> Match:
-    return add_to_db(db, match)
+def create_match(db: Session, match: MatchCreate) -> Match:
+    db_match = Match.model_validate(match)
+    return add_to_db(db, db_match)
 
 
 def update_match(db: Session, match_data: dict, match_id: uuid.UUID) -> Optional[Match]:
+    match_data["updated_at"] = datetime.now()
     return update_to_db(db, match_id, match_data, Match)
 
 
