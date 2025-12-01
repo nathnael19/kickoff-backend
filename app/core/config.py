@@ -7,6 +7,7 @@ class DBSettings(BaseSettings):
     DB_USER: str = ""
     DB_PASSWORD: str = ""
     DB_NAME: str = ""
+    NEON_URL: str = ""
 
     model_config = SettingsConfigDict(
         env_file="./.env",
@@ -18,9 +19,10 @@ class DBSettings(BaseSettings):
     @property
     def postgres_url(self):
         return f"postgresql+psycopg2://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_SERVER}:{self.DB_PORT}/{self.DB_NAME}"
-        # return "postgresql+psycopg2://postgres:Xff0IOan9twwUQ4t@db.xkmugxvutxzavulvptds.supabase.co:5432/postgres?sslmode=require"
-        # return f"postgresql://postgres:Godisgood%403366999@db.xkmugxvutxzavulvptds.supabase.co:5432/postgres"
+
+    @property
+    def online_url(self):
+        return self.NEON_URL
 
 
-# f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
 settings = DBSettings()

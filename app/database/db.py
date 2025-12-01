@@ -2,7 +2,10 @@ from sqlmodel import SQLModel, create_engine, Session
 from app.core.config import settings
 
 # Engine
-engine = create_engine(settings.postgres_url, echo=True)  # NullPool optional for dev
+engine = create_engine(
+    settings.online_url,
+    echo=True,
+)
 
 
 # Create tables

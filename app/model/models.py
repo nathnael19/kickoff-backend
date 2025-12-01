@@ -59,7 +59,7 @@ class Tournament(SQLModel, table=True):
 
 class Team(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    tournament_id: uuid.UUID = Field(foreign_key="tournament.id")
+    tournament_id: uuid.UUID = Field(foreign_key="tournament.id", ondelete="CASCADE")
     name: str = Field(..., max_length=100)
     description: Optional[str] = Field(default=None, max_length=500)
     department: str = Field(..., max_length=100)
@@ -87,7 +87,7 @@ class Team(SQLModel, table=True):
 
 class Player(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    team_id: uuid.UUID = Field(foreign_key="team.id")
+    team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
     name: str = Field(max_length=100)
     position: PlayerPosition
     number: int = Field(ge=1, le=99)
@@ -102,9 +102,9 @@ class Player(SQLModel, table=True):
 
 class Match(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    tournament_id: uuid.UUID = Field(foreign_key="tournament.id")
-    home_team_id: uuid.UUID = Field(foreign_key="team.id")
-    away_team_id: uuid.UUID = Field(foreign_key="team.id")
+    tournament_id: uuid.UUID = Field(foreign_key="tournament.id", ondelete="CASCADE")
+    home_team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
+    away_team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
 
     home_score: int = Field(default=0)
     away_score: int = Field(default=0)
@@ -134,10 +134,10 @@ class Match(SQLModel, table=True):
 
 class Goal(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    match_id: uuid.UUID = Field(foreign_key="match.id")
-    team_id: uuid.UUID = Field(foreign_key="team.id")
-    scorer_player_id: uuid.UUID = Field(foreign_key="player.id")
-    assist_player_id: uuid.UUID = Field(foreign_key="player.id")
+    match_id: uuid.UUID = Field(foreign_key="match.id", ondelete="CASCADE")
+    team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
+    scorer_player_id: uuid.UUID = Field(foreign_key="player.id", ondelete="CASCADE")
+    assist_player_id: uuid.UUID = Field(foreign_key="player.id", ondelete="CASCADE")
     minutes: int = Field(ge=0, le=120)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
@@ -155,8 +155,8 @@ class Goal(SQLModel, table=True):
 
 class MatchEvent(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    match_id: uuid.UUID = Field(foreign_key="match.id")
-    player_id: uuid.UUID = Field(foreign_key="player.id")
+    match_id: uuid.UUID = Field(foreign_key="match.id", ondelete="CASCADE")
+    player_id: uuid.UUID = Field(foreign_key="player.id", ondelete="CASCADE")
     event_type: MatchEventType
     minute: int = Field(ge=0, le=120)
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -168,9 +168,9 @@ class MatchEvent(SQLModel, table=True):
 
 class MatchLineup(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    match_id: uuid.UUID = Field(foreign_key="match.id")
-    team_id: uuid.UUID = Field(foreign_key="team.id")
-    player_id: uuid.UUID = Field(foreign_key="player.id")
+    match_id: uuid.UUID = Field(foreign_key="match.id", ondelete="CASCADE")
+    team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
+    player_id: uuid.UUID = Field(foreign_key="player.id", ondelete="CASCADE")
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     match: Optional[Match] = Relationship(back_populates="lineups")
@@ -184,9 +184,9 @@ class MatchLineup(SQLModel, table=True):
 
 class Card(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    match_id: uuid.UUID = Field(foreign_key="match.id")
-    player_id: uuid.UUID = Field(foreign_key="player.id")
-    team_id: uuid.UUID = Field(foreign_key="team.id")
+    match_id: uuid.UUID = Field(foreign_key="match.id", ondelete="CASCADE")
+    player_id: uuid.UUID = Field(foreign_key="player.id", ondelete="CASCADE")
+    team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
     card_type: CardType
     minute: int = Field(ge=0, le=120)
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -198,8 +198,8 @@ class Card(SQLModel, table=True):
 
 class Standing(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    tournament_id: uuid.UUID = Field(foreign_key="tournament.id")
-    team_id: uuid.UUID = Field(foreign_key="team.id")
+    tournament_id: uuid.UUID = Field(foreign_key="tournament.id", ondelete="CASCADE")
+    team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
     match_played: int = Field(default=0, ge=0)
     wins: int = Field(default=0, ge=0)
     draws: int = Field(default=0, ge=0)
