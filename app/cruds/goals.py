@@ -4,30 +4,28 @@ from sqlmodel import Session, select
 import uuid
 
 
-def get_Player(db: Session, standing_id: uuid.UUID):
-    return db.get(Goal, standing_id)
+def get_Player(db: Session, goal_id: uuid.UUID):
+    return db.get(Goal, goal_id)
 
 
-def get_standings(db: Session, skip: int = 0, limit: int = 0) -> List[Goal]:
+def get_goals(db: Session, skip: int = 0, limit: int = 0) -> List[Goal]:
     statement = select(Goal).offset(skip).limit(limit)
     return list(db.exec(statement).all())
 
 
-def create_standing(db: Session, goal: Goal) -> Goal:
+def create_goal(db: Session, goal: Goal) -> Goal:
     db.add(goal)
     db.commit()
     db.refresh(goal)
     return goal
 
 
-def update_standing(
-    db: Session, standing_data: dict, standing_id: uuid.UUID
-) -> Optional[Goal]:
-    goal = db.get(Goal, standing_id)
+def update_goal(db: Session, goal_data: dict, goal_id: uuid.UUID) -> Optional[Goal]:
+    goal = db.get(Goal, goal_id)
     if not goal:
         return None
-    for key, value in standing_data.values():
-        setattr(standing_data, key, value)
+    for key, value in goal_data.values():
+        setattr(goal_data, key, value)
     db.add(goal)
     db.commit()
     db.refresh(goal)
@@ -35,8 +33,8 @@ def update_standing(
     return goal
 
 
-def delete_standing(db: Session, standing_id: uuid.UUID) -> bool:
-    goal = db.get(Goal, standing_id)
+def delete_goal(db: Session, goal_id: uuid.UUID) -> bool:
+    goal = db.get(Goal, goal_id)
     if not goal:
         return False
     db.delete(goal)
