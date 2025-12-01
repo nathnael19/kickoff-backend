@@ -27,7 +27,7 @@ def update_match_lineup(
     if not match_lineup:
         return None
     for key, value in match_lineup_data.items():
-        setattr(match_lineup_data, key, value)
+        setattr(match_lineup, key, value)
     db.add(match_lineup)
     db.commit()
     db.refresh(match_lineup)

@@ -25,7 +25,7 @@ def update_card(db: Session, card_data: dict, card_id: uuid.UUID) -> Optional[Ca
     if not card:
         return None
     for key, value in card_data.items():
-        setattr(card_data, key, value)
+        setattr(card, key, value)
     db.add(card)
     db.commit()
     db.refresh(card)

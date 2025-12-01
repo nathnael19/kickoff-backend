@@ -25,7 +25,7 @@ def update_match(db: Session, match_data: dict, match_id: uuid.UUID) -> Optional
     if not match:
         return None
     for key, value in match_data.items():
-        setattr(match_data, key, value)
+        setattr(match, key, value)
     db.add(match)
     db.commit()
     db.refresh(match)

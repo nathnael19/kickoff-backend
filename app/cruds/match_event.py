@@ -27,7 +27,7 @@ def update_match_event(
     if not match_event:
         return None
     for key, value in match_event_data.items():
-        setattr(match_event_data, key, value)
+        setattr(match_event, key, value)
     db.add(match_event)
     db.commit()
     db.refresh(match_event)

@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 import uuid
 
 
-def get_Player(db: Session, player_id: uuid.UUID):
+def get_player(db: Session, player_id: uuid.UUID):
     return db.get(Player, player_id)
 
 
@@ -27,7 +27,7 @@ def update_player(
     if not player:
         return None
     for key, value in player_data.items():
-        setattr(player_data, key, value)
+        setattr(player, key, value)
     db.add(player)
     db.commit()
     db.refresh(player)

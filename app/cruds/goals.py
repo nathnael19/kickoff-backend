@@ -25,7 +25,7 @@ def update_goal(db: Session, goal_data: dict, goal_id: uuid.UUID) -> Optional[Go
     if not goal:
         return None
     for key, value in goal_data.items():
-        setattr(goal_data, key, value)
+        setattr(goal, key, value)
     db.add(goal)
     db.commit()
     db.refresh(goal)
