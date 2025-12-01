@@ -8,6 +8,9 @@ class DBSettings(BaseSettings):
     DB_PASSWORD: str = ""
     DB_NAME: str = ""
     NEON_URL: str = ""
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = ""
+    SUPABASE_JWT_KEY: str = ""
 
     model_config = SettingsConfigDict(
         env_file="./.env",
