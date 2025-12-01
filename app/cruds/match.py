@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 import uuid
 
 
-def get_Player(db: Session, match_id: uuid.UUID):
+def get_match(db: Session, match_id: uuid.UUID):
     return db.get(Match, match_id)
 
 
