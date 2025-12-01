@@ -24,7 +24,7 @@ def update_team(db: Session, team_id: uuid.UUID, team_data: dict) -> Optional[Te
     team = db.get(Team, team_id)
     if not team:
         return None
-    for key, value in team_data.values():
+    for key, value in team_data.items():
         setattr(team, key, value)
     db.add(team)
     db.commit()

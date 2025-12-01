@@ -26,7 +26,7 @@ def update_match_event(
     match_event = db.get(MatchEvent, match_event_id)
     if not match_event:
         return None
-    for key, value in match_event_data.values():
+    for key, value in match_event_data.items():
         setattr(match_event_data, key, value)
     db.add(match_event)
     db.commit()

@@ -26,7 +26,7 @@ def update_standing(
     standing = db.get(Standing, standing_id)
     if not standing:
         return None
-    for key, value in standing_data.values():
+    for key, value in standing_data.items():
         setattr(standing_data, key, value)
     db.add(standing)
     db.commit()

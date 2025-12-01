@@ -26,7 +26,7 @@ def update_player(
     player = db.get(Player, player_id)
     if not player:
         return None
-    for key, value in player_data.values():
+    for key, value in player_data.items():
         setattr(player_data, key, value)
     db.add(player)
     db.commit()

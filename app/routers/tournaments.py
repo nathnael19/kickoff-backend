@@ -35,7 +35,7 @@ def add_tournament(tournamet: Tournament, db: Session = Depends(get_session)):
     return create_tournament(db=db, tournament=tournamet)
 
 
-@router.put("/{tournament_id}")
+@router.put("/{tournament_id}", response_model=Tournament)
 def put_tournament(
     tournament_id: uuid.UUID, tournamet_data: dict, db: Session = Depends(get_session)
 ):
@@ -47,7 +47,7 @@ def put_tournament(
     return updated
 
 
-@router.delete("/{tournament_id}")
+@router.delete("/{tournament_id}", response_model=dict)
 def remove_tournament(tournament_id: uuid.UUID, db: Session = Depends(get_session)):
     removed = delete_tournament(db=db, tournament_id=tournament_id)
     if not removed:
