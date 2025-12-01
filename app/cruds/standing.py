@@ -27,7 +27,7 @@ def update_standing(
     if not standing:
         return None
     for key, value in standing_data.items():
-        setattr(standing_data, key, value)
+        setattr(standing, key, value)
     db.add(standing)
     db.commit()
     db.refresh(standing)
