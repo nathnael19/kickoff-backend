@@ -3,7 +3,7 @@ from app.model.models import Match
 from sqlmodel import Session, select
 import uuid
 
-from app.utils.helpers import add_to_db, delete_from_db
+from app.utils.helpers import add_to_db, delete_from_db, update_to_db
 
 
 def get_match(db: Session, match_id: uuid.UUID):
@@ -20,12 +20,7 @@ def create_match(db: Session, match: Match) -> Match:
 
 
 def update_match(db: Session, match_data: dict, match_id: uuid.UUID) -> Optional[Match]:
-    match = db.get(Match, match_id)
-    if not match:
-        return None
-    for key, value in match_data.items():
-        setattr(match, key, value)
-    return add_to_db(db, match)
+    return update_to_db(db, match_id, match_data, Match)
 
 
 def delete_match(db: Session, match_id: uuid.UUID) -> bool:

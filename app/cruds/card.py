@@ -1,7 +1,7 @@
 from typing import List, Optional
 from app.model.models import Card
 from sqlmodel import Session, select
-from app.utils.helpers import add_to_db, delete_from_db
+from app.utils.helpers import add_to_db, delete_from_db, update_to_db
 import uuid
 
 
@@ -19,12 +19,7 @@ def create_card(db: Session, card: Card):
 
 
 def update_card(db: Session, card_data: dict, card_id: uuid.UUID) -> Optional[Card]:
-    card = db.get(Card, card_id)
-    if not card:
-        return None
-    for key, value in card_data.items():
-        setattr(card, key, value)
-    return add_to_db(db, card)
+    return update_to_db(db, card_id, card_data, Card)
 
 
 def delete_card(db: Session, card_id: uuid.UUID) -> bool:

@@ -3,7 +3,7 @@ from app.model.models import Standing
 from sqlmodel import Session, select
 import uuid
 
-from app.utils.helpers import add_to_db, delete_from_db
+from app.utils.helpers import add_to_db, delete_from_db, update_to_db
 
 
 def get_standing(db: Session, standing_id: uuid.UUID):
@@ -22,12 +22,7 @@ def create_standing(db: Session, standing: Standing) -> Standing:
 def update_standing(
     db: Session, standing_data: dict, standing_id: uuid.UUID
 ) -> Optional[Standing]:
-    standing = db.get(Standing, standing_id)
-    if not standing:
-        return None
-    for key, value in standing_data.items():
-        setattr(standing, key, value)
-    return add_to_db(db, standing)
+    return update_to_db(db, standing_id, standing_data, Standing)
 
 
 def delete_standing(db: Session, standing_id: uuid.UUID) -> bool:

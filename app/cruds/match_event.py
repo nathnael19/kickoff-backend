@@ -3,7 +3,7 @@ from app.model.models import MatchEvent
 from sqlmodel import Session, select
 import uuid
 
-from app.utils.helpers import add_to_db, delete_from_db
+from app.utils.helpers import add_to_db, delete_from_db, update_to_db
 
 
 def get_match_event(db: Session, match_event_id: uuid.UUID):
@@ -22,12 +22,7 @@ def create_match_event(db: Session, match_event: MatchEvent) -> MatchEvent:
 def update_match_event(
     db: Session, match_event_data: dict, match_event_id: uuid.UUID
 ) -> Optional[MatchEvent]:
-    match_event = db.get(MatchEvent, match_event_id)
-    if not match_event:
-        return None
-    for key, value in match_event_data.items():
-        setattr(match_event, key, value)
-    return add_to_db(db, match_event)
+    return update_to_db(db, match_event_id, match_event_data, MatchEvent)
 
 
 def delete_match_event(db: Session, match_event_id: uuid.UUID) -> bool:

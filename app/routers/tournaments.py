@@ -4,6 +4,7 @@ from typing import List
 import uuid
 from app.model.models import Tournament
 from app.database.db import get_session
+from app.utils.helpers import database_dependency
 from app.cruds.tournaments import (
     get_tournament,
     get_tournaments,
@@ -23,7 +24,7 @@ def read_tournaments(
 
 
 @router.get("/{tournement_id}", response_model=Tournament)
-def read_tournament(tournament_id: uuid.UUID, db: Session = Depends(get_session)):
+def read_tournament(tournament_id: uuid.UUID, db: database_dependency):
     tournamet = get_tournament(db=db, tournament_id=tournament_id)
     if not tournamet:
         raise HTTPException(detail="Not Found!!", status_code=status.HTTP_404_NOT_FOUND)
@@ -31,13 +32,13 @@ def read_tournament(tournament_id: uuid.UUID, db: Session = Depends(get_session)
 
 
 @router.post("/", response_model=Tournament)
-def add_tournament(tournamet: Tournament, db: Session = Depends(get_session)):
+def add_tournament(tournamet: Tournament, db: database_dependency):
     return create_tournament(db=db, tournament=tournamet)
 
 
 @router.put("/{tournament_id}", response_model=Tournament)
 def put_tournament(
-    tournament_id: uuid.UUID, tournamet_data: dict, db: Session = Depends(get_session)
+    tournament_id: uuid.UUID, tournamet_data: dict, db: database_dependency
 ):
     updated = update_tournament(
         db=db, tournament_id=tournament_id, tournament_data=tournamet_data
@@ -48,7 +49,7 @@ def put_tournament(
 
 
 @router.delete("/{tournament_id}", response_model=dict)
-def remove_tournament(tournament_id: uuid.UUID, db: Session = Depends(get_session)):
+def remove_tournament(tournament_id: uuid.UUID, db: database_dependency):
     removed = delete_tournament(db=db, tournament_id=tournament_id)
     if not removed:
         raise HTTPException(detail="Not Found!!", status_code=status.HTTP_404_NOT_FOUND)

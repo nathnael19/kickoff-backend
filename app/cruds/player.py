@@ -3,7 +3,7 @@ from app.model.models import Player
 from sqlmodel import Session, select
 import uuid
 
-from app.utils.helpers import add_to_db, delete_from_db
+from app.utils.helpers import add_to_db, delete_from_db, update_to_db
 
 
 def get_player(db: Session, player_id: uuid.UUID):
@@ -22,12 +22,7 @@ def create_player(db: Session, player: Player) -> Player:
 def update_player(
     db: Session, player_data: dict, player_id: uuid.UUID
 ) -> Optional[Player]:
-    player = db.get(Player, player_id)
-    if not player:
-        return None
-    for key, value in player_data.items():
-        setattr(player, key, value)
-    return add_to_db(db, player)
+    return update_to_db(db, player_id, player_data, Player)
 
 
 def delete_player(db: Session, player_id: uuid.UUID) -> bool:

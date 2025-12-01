@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from app.model.models import Tournament
 import uuid
 
-from app.utils.helpers import add_to_db, delete_from_db
+from app.utils.helpers import add_to_db, delete_from_db, update_to_db
 
 
 def get_tournament(db: Session, tournament_id: uuid.UUID) -> Optional[Tournament]:
@@ -22,12 +22,7 @@ def create_tournament(db: Session, tournament: Tournament) -> Tournament:
 def update_tournament(
     db: Session, tournament_id: uuid.UUID, tournament_data: dict
 ) -> Optional[Tournament]:
-    tournament = db.get(Tournament, tournament_id)
-    if not tournament:
-        return None
-    for key, value in tournament_data.items():
-        setattr(tournament, key, value)
-    return add_to_db(db, tournament)
+    return update_to_db(db, tournament_id, tournament_data, Tournament)
 
 
 def delete_tournament(db: Session, tournament_id: uuid.UUID):
