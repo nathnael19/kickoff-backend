@@ -22,10 +22,9 @@ def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
 
-# Correct get_session for FastAPI
 def get_session():
     session = Session(engine)
     try:
         yield session
     finally:
-        session.close()  # ALWAYS close session in finally, no bare except
+        session.close()

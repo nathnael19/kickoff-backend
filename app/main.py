@@ -4,6 +4,8 @@ from app.routers import tournaments
 
 app = FastAPI(title="Kick OFF")
 
+app.include_router(tournaments.router)
+
 
 @app.on_event("startup")
 def on_startup():
