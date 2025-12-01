@@ -3,7 +3,7 @@ from app.model.models import MatchLineup
 from sqlmodel import Session, select
 import uuid
 
-from app.utils.helpers import add_to_db
+from app.utils.helpers import add_to_db, delete_from_db
 
 
 def get_match_lineup(db: Session, match_lineup_id: uuid.UUID):
@@ -31,9 +31,4 @@ def update_match_lineup(
 
 
 def delete_match_lineup(db: Session, match_lineup_id: uuid.UUID) -> bool:
-    match_lineup = db.get(MatchLineup, match_lineup_id)
-    if not match_lineup:
-        return False
-    db.delete(match_lineup)
-    db.commit()
-    return True
+    return delete_from_db(db, match_lineup_id, MatchLineup)

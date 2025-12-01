@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from app.model.models import Team
 import uuid
 
-from app.utils.helpers import add_to_db
+from app.utils.helpers import add_to_db, delete_from_db
 
 
 def get_team(db: Session, team_id: uuid.UUID) -> Optional[Team]:
@@ -29,9 +29,4 @@ def update_team(db: Session, team_id: uuid.UUID, team_data: dict) -> Optional[Te
 
 
 def delete_team(db: Session, team_id: uuid.UUID) -> bool:
-    team = db.get(Team, team_id)
-    if not team:
-        return False
-    db.delete(team)
-    db.commit()
-    return True
+    return delete_from_db(db, team_id, Team)

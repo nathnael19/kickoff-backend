@@ -3,7 +3,7 @@ from app.model.models import Goal
 from sqlmodel import Session, select
 import uuid
 
-from app.utils.helpers import add_to_db
+from app.utils.helpers import add_to_db, delete_from_db
 
 
 def get_goal(db: Session, goal_id: uuid.UUID):
@@ -29,9 +29,4 @@ def update_goal(db: Session, goal_data: dict, goal_id: uuid.UUID) -> Optional[Go
 
 
 def delete_goal(db: Session, goal_id: uuid.UUID) -> bool:
-    goal = db.get(Goal, goal_id)
-    if not goal:
-        return False
-    db.delete(goal)
-    db.commit()
-    return True
+    return delete_from_db(db, goal_id, Goal)

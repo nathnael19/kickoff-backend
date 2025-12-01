@@ -3,7 +3,7 @@ from app.model.models import Standing
 from sqlmodel import Session, select
 import uuid
 
-from app.utils.helpers import add_to_db
+from app.utils.helpers import add_to_db, delete_from_db
 
 
 def get_standing(db: Session, standing_id: uuid.UUID):
@@ -31,9 +31,4 @@ def update_standing(
 
 
 def delete_standing(db: Session, standing_id: uuid.UUID) -> bool:
-    standing = db.get(Standing, standing_id)
-    if not standing:
-        return False
-    db.delete(standing)
-    db.commit()
-    return True
+    return delete_from_db(db, standing_id, Standing)

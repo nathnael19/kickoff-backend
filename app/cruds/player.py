@@ -3,7 +3,7 @@ from app.model.models import Player
 from sqlmodel import Session, select
 import uuid
 
-from app.utils.helpers import add_to_db
+from app.utils.helpers import add_to_db, delete_from_db
 
 
 def get_player(db: Session, player_id: uuid.UUID):
@@ -31,9 +31,4 @@ def update_player(
 
 
 def delete_player(db: Session, player_id: uuid.UUID) -> bool:
-    player = db.get(Player, player_id)
-    if not player:
-        return False
-    db.delete(player)
-    db.commit()
-    return True
+    return delete_from_db(db, player_id, Player)

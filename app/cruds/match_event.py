@@ -3,7 +3,7 @@ from app.model.models import MatchEvent
 from sqlmodel import Session, select
 import uuid
 
-from app.utils.helpers import add_to_db
+from app.utils.helpers import add_to_db, delete_from_db
 
 
 def get_match_event(db: Session, match_event_id: uuid.UUID):
@@ -31,9 +31,4 @@ def update_match_event(
 
 
 def delete_match_event(db: Session, match_event_id: uuid.UUID) -> bool:
-    match_event = db.get(MatchEvent, match_event_id)
-    if not match_event:
-        return False
-    db.delete(match_event)
-    db.commit()
-    return True
+    return delete_from_db(db, match_event_id, MatchEvent)

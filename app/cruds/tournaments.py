@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from app.model.models import Tournament
 import uuid
 
-from app.utils.helpers import add_to_db
+from app.utils.helpers import add_to_db, delete_from_db
 
 
 def get_tournament(db: Session, tournament_id: uuid.UUID) -> Optional[Tournament]:
@@ -30,10 +30,5 @@ def update_tournament(
     return add_to_db(db, tournament)
 
 
-def delete_tournament(db: Session, tournament_id: uuid.UUID) -> bool:
-    tournament = db.get(Tournament, tournament_id)
-    if not tournament:
-        return False
-    db.delete(tournament)
-    db.commit()
-    return True
+def delete_tournament(db: Session, tournament_id: uuid.UUID):
+    return delete_from_db(db=db, id=tournament_id, model=Tournament)

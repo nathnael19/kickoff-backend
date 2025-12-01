@@ -1,7 +1,7 @@
 from typing import List, Optional
 from app.model.models import Card
 from sqlmodel import Session, select
-from app.utils.helpers import add_to_db
+from app.utils.helpers import add_to_db, delete_from_db
 import uuid
 
 
@@ -28,9 +28,4 @@ def update_card(db: Session, card_data: dict, card_id: uuid.UUID) -> Optional[Ca
 
 
 def delete_card(db: Session, card_id: uuid.UUID) -> bool:
-    card = db.get(Card, card_id)
-    if not card:
-        return False
-    db.delete(card)
-    db.commit()
-    return True
+    return delete_from_db(db, card_id, Card)
