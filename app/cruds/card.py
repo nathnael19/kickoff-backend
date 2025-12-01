@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 import uuid
 
 
-def get_Player(db: Session, card_id: uuid.UUID):
+def get_card(db: Session, card_id: uuid.UUID):
     return db.get(Card, card_id)
 
 

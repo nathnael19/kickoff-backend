@@ -9,9 +9,10 @@ from app.routers import (
     match_lineup,
     match_event,
     goals,
+    card,
 )
 
-app = FastAPI(title="Kick OFF")
+app = FastAPI(title="Kick OFF", version="1.0.0")
 
 app.include_router(tournaments.router)
 app.include_router(team.router)
@@ -21,6 +22,7 @@ app.include_router(match.router)
 app.include_router(match_lineup.router)
 app.include_router(match_event.router)
 app.include_router(goals.router)
+app.include_router(card.router)
 
 
 @app.on_event("startup")
