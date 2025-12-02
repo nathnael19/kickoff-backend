@@ -10,7 +10,7 @@ def login(email: EmailStr, password: str) -> Optional[str]:
     response = supabase.auth.sign_in_with_password(
         {"email": email, "password": password}
     )
-
+    print(response)
     # Access token as an attribute
-    token = getattr(response, "access_token", None)
+    token = getattr(response.session, "access_token", None)
     return token

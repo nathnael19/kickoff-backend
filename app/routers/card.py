@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from app.model.models import Card, CardCreate
 import uuid
+from app.core.dep import get_current_user
 from app.utils.helpers import database_dependency
 from app.cruds.card import create_card, get_card, get_cards, update_card, delete_card
 
@@ -22,12 +23,21 @@ def read_card(card_id: uuid.UUID, db: database_dependency):
 
 
 @router.post("/", response_model=Card)
-def add_card(card: CardCreate, db: database_dependency):
+def add_card(
+    card: CardCreate,
+    db: database_dependency,
+    user=Depends(get_current_user),
+):
     return create_card(db=db, card=card)
 
 
 @router.put("/", response_model=Card)
-def put_card(card_id: uuid.UUID, card_data: dict, db: database_dependency):
+def put_card(
+    card_id: uuid.UUID,
+    card_data: dict,
+    db: database_dependency,
+    user=Depends(get_current_user),
+):
     update = update_card(db=db, card_id=card_id, card_data=card_data)
     if not update:
         raise HTTPException(detail="Not Found!!", status_code=status.HTTP_404_NOT_FOUND)
@@ -35,7 +45,11 @@ def put_card(card_id: uuid.UUID, card_data: dict, db: database_dependency):
 
 
 @router.delete("/", response_model=dict)
-def remove_card(card_id: uuid.UUID, db: database_dependency):
+def remove_card(
+    card_id: uuid.UUID,
+    db: database_dependency,
+    user=Depends(get_current_user),
+):
     delete = delete_card(db=db, card_id=card_id)
     if not delete:
         raise HTTPException(detail="Not Found!!", status_code=status.HTTP_404_NOT_FOUND)

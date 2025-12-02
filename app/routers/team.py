@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from app.model.models import Team, TeamCreate
 import uuid
+from app.core.dep import get_current_user
 from app.utils.helpers import database_dependency
 from app.cruds.team import create_team, get_team, get_teams, update_team, delete_team
 
@@ -22,12 +23,17 @@ def read_team(team_id: uuid.UUID, db: database_dependency):
 
 
 @router.post("/", response_model=Team)
-def add_team(team: TeamCreate, db: database_dependency):
+def add_team(team: TeamCreate, db: database_dependency, user=Depends(get_current_user)):
     return create_team(db=db, team=team)
 
 
 @router.put("/", response_model=Team)
-def put_team(team_id: uuid.UUID, team_data: dict, db: database_dependency):
+def put_team(
+    team_id: uuid.UUID,
+    team_data: dict,
+    db: database_dependency,
+    user=Depends(get_current_user),
+):
     update = update_team(db=db, team_id=team_id, team_data=team_data)
     if not update:
         raise HTTPException(detail="Not Found!!", status_code=status.HTTP_404_NOT_FOUND)
@@ -35,7 +41,9 @@ def put_team(team_id: uuid.UUID, team_data: dict, db: database_dependency):
 
 
 @router.delete("/", response_model=dict)
-def remove_team(team_id: uuid.UUID, db: database_dependency):
+def remove_team(
+    team_id: uuid.UUID, db: database_dependency, user=Depends(get_current_user)
+):
     delete = delete_team(db=db, team_id=team_id)
     if not delete:
         raise HTTPException(detail="Not Found!!", status_code=status.HTTP_404_NOT_FOUND)

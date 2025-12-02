@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from app.model.models import MatchLineup, MatchLineupCreate
 import uuid
+from app.core.dep import get_current_user
 from app.utils.helpers import database_dependency
 from app.cruds.match_lineup import (
     create_match_lineup,
@@ -28,7 +29,11 @@ def read_match_lineup(match_lineup_id: uuid.UUID, db: database_dependency):
 
 
 @router.post("/", response_model=MatchLineup)
-def add_match_lineup(match_lineup: MatchLineupCreate, db: database_dependency):
+def add_match_lineup(
+    match_lineup: MatchLineupCreate,
+    db: database_dependency,
+    user=Depends(get_current_user),
+):
     return create_match_lineup(db=db, match_lineup=match_lineup)
 
 
@@ -37,6 +42,7 @@ def put_match_lineup(
     match_lineup_id: uuid.UUID,
     match_lineup_data: dict,
     db: database_dependency,
+    user=Depends(get_current_user),
 ):
     update = update_match_lineup(
         db=db, match_lineup_id=match_lineup_id, match_lineup_data=match_lineup_data
@@ -47,7 +53,9 @@ def put_match_lineup(
 
 
 @router.delete("/", response_model=dict)
-def remove_match_lineup(match_lineup_id: uuid.UUID, db: database_dependency):
+def remove_match_lineup(
+    match_lineup_id: uuid.UUID, db: database_dependency, user=Depends(get_current_user)
+):
     delete = delete_match_lineup(db=db, match_lineup_id=match_lineup_id)
     if not delete:
         raise HTTPException(detail="Not Found!!", status_code=status.HTTP_404_NOT_FOUND)

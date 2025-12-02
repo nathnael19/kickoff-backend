@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from app.model.models import Goal, GoalCreate
 import uuid
+from app.core.dep import get_current_user
 from app.utils.helpers import database_dependency
 from app.cruds.goals import create_goal, get_goal, get_goals, update_goal, delete_goal
 
@@ -22,12 +23,17 @@ def read_goal(goal_id: uuid.UUID, db: database_dependency):
 
 
 @router.post("/", response_model=Goal)
-def add_goal(goal: GoalCreate, db: database_dependency):
+def add_goal(goal: GoalCreate, db: database_dependency, user=Depends(get_current_user)):
     return create_goal(db=db, goal=goal)
 
 
 @router.put("/", response_model=Goal)
-def put_goal(goal_id: uuid.UUID, goal_data: dict, db: database_dependency):
+def put_goal(
+    goal_id: uuid.UUID,
+    goal_data: dict,
+    db: database_dependency,
+    user=Depends(get_current_user),
+):
     update = update_goal(db=db, goal_id=goal_id, goal_data=goal_data)
     if not update:
         raise HTTPException(detail="Not Found!!", status_code=status.HTTP_404_NOT_FOUND)
@@ -35,7 +41,9 @@ def put_goal(goal_id: uuid.UUID, goal_data: dict, db: database_dependency):
 
 
 @router.delete("/", response_model=dict)
-def remove_goal(goal_id: uuid.UUID, db: database_dependency):
+def remove_goal(
+    goal_id: uuid.UUID, db: database_dependency, user=Depends(get_current_user)
+):
     delete = delete_goal(db=db, goal_id=goal_id)
     if not delete:
         raise HTTPException(detail="Not Found!!", status_code=status.HTTP_404_NOT_FOUND)

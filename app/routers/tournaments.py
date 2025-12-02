@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 import uuid
+from app.core.dep import get_current_user
 from app.model.models import Tournament, TournamentCreate
 from app.utils.helpers import database_dependency
 from app.cruds.tournaments import (
@@ -28,13 +29,20 @@ def read_tournament(tournament_id: uuid.UUID, db: database_dependency):
 
 
 @router.post("/", response_model=Tournament)
-def add_tournament(tournament: TournamentCreate, db: database_dependency):
+def add_tournament(
+    tournament: TournamentCreate,
+    db: database_dependency,
+    user=Depends(get_current_user),
+):
     return create_tournament(db=db, tournament=tournament)
 
 
 @router.put("/{tournament_id}", response_model=Tournament)
 def put_tournament(
-    tournament_id: uuid.UUID, tournamet_data: dict, db: database_dependency
+    tournament_id: uuid.UUID,
+    tournamet_data: dict,
+    db: database_dependency,
+    user=Depends(get_current_user),
 ):
     updated = update_tournament(
         db=db, tournament_id=tournament_id, tournament_data=tournamet_data
@@ -45,7 +53,9 @@ def put_tournament(
 
 
 @router.delete("/{tournament_id}", response_model=dict)
-def remove_tournament(tournament_id: uuid.UUID, db: database_dependency):
+def remove_tournament(
+    tournament_id: uuid.UUID, db: database_dependency, user=Depends(get_current_user)
+):
     removed = delete_tournament(db=db, tournament_id=tournament_id)
     if not removed:
         raise HTTPException(detail="Not Found!!", status_code=status.HTTP_404_NOT_FOUND)

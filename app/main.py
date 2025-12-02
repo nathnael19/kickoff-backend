@@ -1,5 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
+
+from app.services.supabase import login
 from .database.db import create_db_and_tables
+from app.core.dep import get_current_user
+from pydantic import EmailStr
 from app.routers import (
     tournaments,
     team,
@@ -13,6 +17,15 @@ from app.routers import (
 )
 
 app = FastAPI(title="Kick OFF", version="1.0.0")
+
+
+@app.post("/login")
+def login_route(email: str, password: str):
+    token = login(email, password)
+    if not token:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    return {"access_token": token, "token_type": "bearer"}
+
 
 app.include_router(tournaments.router)
 app.include_router(team.router)
@@ -31,5 +44,5 @@ def on_startup():
 
 
 @app.get("/")
-def home():
+def home(user=Depends(get_current_user)):
     return {"message": "homepage"}

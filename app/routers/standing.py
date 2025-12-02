@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from app.model.models import Standing, StandingCreate
 import uuid
+from app.core.dep import get_current_user
 from app.utils.helpers import database_dependency
 from app.cruds.standing import (
     create_standing,
@@ -28,12 +29,19 @@ def read_standing(standing_id: uuid.UUID, db: database_dependency):
 
 
 @router.post("/", response_model=Standing)
-def add_standing(standing: StandingCreate, db: database_dependency):
+def add_standing(
+    standing: StandingCreate, db: database_dependency, user=Depends(get_current_user)
+):
     return create_standing(db=db, standing=standing)
 
 
 @router.put("/", response_model=Standing)
-def put_standing(standing_id: uuid.UUID, standing_data: dict, db: database_dependency):
+def put_standing(
+    standing_id: uuid.UUID,
+    standing_data: dict,
+    db: database_dependency,
+    user=Depends(get_current_user),
+):
     update = update_standing(
         db=db, standing_id=standing_id, standing_data=standing_data
     )
@@ -43,7 +51,9 @@ def put_standing(standing_id: uuid.UUID, standing_data: dict, db: database_depen
 
 
 @router.delete("/", response_model=dict)
-def remove_standing(standing_id: uuid.UUID, db: database_dependency):
+def remove_standing(
+    standing_id: uuid.UUID, db: database_dependency, user=Depends(get_current_user)
+):
     delete = delete_standing(db=db, standing_id=standing_id)
     if not delete:
         raise HTTPException(detail="Not Found!!", status_code=status.HTTP_404_NOT_FOUND)
