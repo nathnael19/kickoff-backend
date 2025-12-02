@@ -3,7 +3,7 @@ from app.core.config import settings
 
 # Engine
 engine = create_engine(
-    settings.postgres_url,
+    settings.online_url,
     echo=True,
 )
 

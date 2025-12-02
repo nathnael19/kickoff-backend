@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import List
 from app.model.models import Player, PlayerCreate
 import uuid
+from sqlmodel import select
 from app.core.dep import get_current_user
 from app.utils.helpers import database_dependency
 from app.cruds.player import (
@@ -13,6 +14,24 @@ from app.cruds.player import (
 )
 
 router = APIRouter(prefix="/players", tags=["Players"])
+
+
+@router.get("/search")
+def search_players(
+    session: database_dependency,
+    name: str = Query(None, description="Search by player name"),
+    team_id: int = Query(None, description="Filter by team"),
+    position: str = Query(None, description="Filter by position"),
+):
+    query = select(Player)
+    if name:
+        query = query.where(Player.name.ilike(f"%{name}%"))  # type: ignore
+    if team_id:
+        query = query.where(Player.team_id == team_id)
+    if position:
+        query = query.where(Player.position == position)
+    results = session.exec(query).all()
+    return {"players": results}
 
 
 @router.get("/", response_model=List[Player])
