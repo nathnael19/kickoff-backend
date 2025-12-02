@@ -70,7 +70,7 @@ class LoginRequest(BaseModel):
 # Rate-limited login route
 # -------------------------------
 @app.post("/login")
-@limiter.limit("5/minute")
+@limiter.limit("3/minute")
 async def login_route(request: Request, data: LoginRequest):
     try:
         token = login(data.email, data.password)
