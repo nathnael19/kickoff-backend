@@ -3,10 +3,26 @@ from typing import List
 from app.model.models import Team, TeamCreate
 import uuid
 from app.core.dep import get_current_user
+from app.schemas.schema import TeamRead
 from app.utils.helpers import database_dependency, upload_to_supabase
-from app.cruds.team import create_team, get_team, get_teams, update_team, delete_team
+from app.cruds.team import (
+    create_team,
+    get_team,
+    get_team_full,
+    get_teams,
+    update_team,
+    delete_team,
+)
 
 router = APIRouter(prefix="/teams", tags=["Teams"])
+
+
+@router.get("/{team_id}/full", response_model=TeamRead)
+def team_full(team_id: uuid.UUID, db: database_dependency):
+    team = get_team_full(db, team_id)
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    return team
 
 
 @router.get("/", response_model=List[Team])

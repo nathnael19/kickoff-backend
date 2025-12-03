@@ -12,7 +12,7 @@ class PlayerRead(BaseModel):
     photo_url: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TeamRead(BaseModel):
@@ -25,7 +25,7 @@ class TeamRead(BaseModel):
     players: List[PlayerRead] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TournamentRead(BaseModel):
@@ -41,4 +41,4 @@ class TournamentRead(BaseModel):
     teams: List[TeamRead] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
