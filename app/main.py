@@ -117,5 +117,5 @@ def on_startup():
 # Home route (protected)
 # -------------------------------
 @app.get("/")
-def home(user=Depends(get_current_user)):
+def home():
     return {"message": "homepage"}

@@ -37,3 +37,27 @@ def update_to_db(db: Session, id: uuid.UUID, data: dict, model: Type[SQLModel]):
 raised_error = HTTPException(
     detail="Not Found!!", status_code=status.HTTP_404_NOT_FOUND
 )
+
+
+import uuid
+from fastapi import UploadFile, HTTPException
+from app.services.supabase import supabase
+
+
+async def upload_to_supabase(file: UploadFile, bucket: str) -> str:
+    file_bytes = await file.read()
+    filename = f"{uuid.uuid4()}_{file.filename}"
+
+    res = supabase.storage.from_(bucket).upload(filename, file_bytes, {"upsert": "true"})  # type: ignore
+    error = None
+
+    if isinstance(res, dict):
+        error = res.get("error")
+    else:
+        error = getattr(res, "error", None)
+
+    if error:
+        message = error.get("message") if isinstance(error, dict) else str(error)
+        raise HTTPException(400, message)
+
+    return supabase.storage.from_(bucket).get_public_url(filename)

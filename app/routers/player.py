@@ -1,10 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    UploadFile,
+    status,
+    Query,
+)
 from typing import List
 from app.model.models import Player, PlayerCreate
 import uuid
 from sqlmodel import select
 from app.core.dep import get_current_user
-from app.utils.helpers import database_dependency
+from app.utils.helpers import database_dependency, upload_to_supabase
 from app.cruds.player import (
     create_player,
     get_player,
@@ -45,6 +54,17 @@ def read_player(player_id: uuid.UUID, db: database_dependency):
     if not player:
         raise HTTPException(detail="Not found!", status_code=status.HTTP_404_NOT_FOUND)
     return player
+
+
+@router.post("/upload")
+async def upload_logo(
+    db: database_dependency,
+    file: UploadFile = File(...),
+    player_id: uuid.UUID = Form(...),
+):
+    url = await upload_to_supabase(file, "players")
+    update_player(db=db, player_id=player_id, player_data={"photo_url": url})
+    return {"player_id": player_id, "photo_url": url}
 
 
 @router.post("/", response_model=Player)
