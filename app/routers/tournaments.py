@@ -11,10 +11,12 @@ import uuid
 from app.core.dep import get_current_user
 from fastapi import Form
 from app.model.models import Tournament, TournamentCreate
+from app.schemas.schema import TournamentRead
 from app.utils.helpers import database_dependency
 from app.services.supabase import supabase
 from app.utils.helpers import upload_to_supabase
 from app.cruds.tournaments import (
+    get_tournament_full,
     get_tournament,
     get_tournaments,
     update_tournament,
@@ -58,6 +60,14 @@ async def add_tournament(
     user=Depends(get_current_user),
 ):
     return create_tournament(db=db, tournament=tournament)
+
+
+@router.get("/{tournament_id}/full", response_model=TournamentRead)
+def tournament_full(tournament_id: uuid.UUID, db: database_dependency):
+    tournament = get_tournament_full(db, tournament_id)
+    if not tournament:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    return tournament
 
 
 @router.put("/{tournament_id}", response_model=Tournament)

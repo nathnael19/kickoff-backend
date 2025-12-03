@@ -1,3 +1,7 @@
+from sqlmodel import select
+from sqlalchemy.orm import selectinload
+from sqlmodel import Session
+import uuid
 from datetime import datetime
 from typing import List, Optional
 from sqlmodel import Session, select
@@ -30,3 +34,13 @@ def update_tournament(
 
 def delete_tournament(db: Session, tournament_id: uuid.UUID):
     return delete_from_db(db=db, id=tournament_id, model=Tournament)
+
+
+def get_tournament_full(db: Session, tournament_id: uuid.UUID):
+    statement = (
+        select(Tournament)
+        .where(Tournament.id == tournament_id)
+        .options(selectinload(Tournament.teams))  # type: ignore
+    )
+    result = db.exec(statement).first()
+    return result
