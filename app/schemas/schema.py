@@ -42,3 +42,7 @@ class TournamentRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class LineupAddPlayers(BaseModel):
+    player_ids: List[uuid.UUID]

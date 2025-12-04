@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, Column, JSON
 import uuid
 from datetime import datetime
 from enum import Enum
@@ -67,7 +67,6 @@ class Tournament(TournamentBase, table=True):
 
 # --- Team ---
 class TeamBase(SQLModel):
-    # Foreign keys must be in Base/Create so you can link them on creation
     tournament_id: uuid.UUID = Field(foreign_key="tournament.id", ondelete="CASCADE")
     name: str = Field(..., max_length=100)
     description: Optional[str] = Field(default=None, max_length=500)
@@ -166,8 +165,7 @@ class GoalBase(SQLModel):
     match_id: uuid.UUID = Field(foreign_key="match.id", ondelete="CASCADE")
     team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
     scorer_player_id: uuid.UUID = Field(foreign_key="player.id", ondelete="CASCADE")
-    # Note: If an assist is optional, you might want to make this Optional[uuid.UUID] = None
-    assist_player_id: uuid.UUID = Field(foreign_key="player.id", ondelete="CASCADE")
+    assist_player_id: Optional[uuid.UUID] = Field(foreign_key="player.id", default=None)
     minutes: int = Field(ge=0, le=120)
 
 
@@ -215,7 +213,7 @@ class MatchEvent(MatchEventBase, table=True):
 class MatchLineupBase(SQLModel):
     match_id: uuid.UUID = Field(foreign_key="match.id", ondelete="CASCADE")
     team_id: uuid.UUID = Field(foreign_key="team.id", ondelete="CASCADE")
-    player_id: uuid.UUID = Field(foreign_key="player.id", ondelete="CASCADE")
+    player_ids: List[uuid.UUID] = Field(sa_column=Column(JSON), default=[])
 
 
 class MatchLineupCreate(MatchLineupBase):
@@ -230,9 +228,7 @@ class MatchLineup(MatchLineupBase, table=True):
     team: Optional[Team] = Relationship(
         sa_relationship_kwargs={"foreign_keys": "[MatchLineup.team_id]"}
     )
-    player: Optional[Player] = Relationship(
-        sa_relationship_kwargs={"foreign_keys": "[MatchLineup.player_id]"}
-    )
+    # player_ids is JSON, so no Relationship to Player directly
 
 
 # --- Card ---
