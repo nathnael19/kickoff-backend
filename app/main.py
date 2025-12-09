@@ -91,6 +91,11 @@ async def login_route(request: Request, data: LoginRequest):
         )
 
 
+@app.post("/logout")
+async def logout(current_user: dict = Depends(get_current_user)):
+    return {"message": "Logged out successfully"}
+
+
 # -------------------------------
 # Include routers
 # -------------------------------
